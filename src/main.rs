@@ -1,47 +1,6 @@
 use std::{env, fs};
 use toml::Value;
 
-// fn get_values(input: &Value) {
-//     // TODO: remove this later
-//     // fs::remove_dir("/home/chris/Repos/colorgen-nvim/lua").expect("Unable to remove dir");
-//     match input.as_table() {
-//         Some(table) => {
-//             // TODO: skip for information and palette
-//
-//             // println!("tables");
-//             // println!("{table:#?}");
-//             let data = "Some data! \n\
-//                                 test new line \n\
-//                                 test another line \n";
-//
-//             // loop over files and add data
-//             // for key in table.keys() {
-//             //     .expect("Unable to write file");
-//             // }
-//
-//             for (key, val) in table.iter() {
-//                 // println!("{key}");
-//                 get_values(val)
-//                 // fs::write(
-//                 //         format!(
-//                 //             "{home_dir}/Repos/colorgen-nvim/{colorscheme_name}/lua/{colorscheme_name}/{filename}.lua",
-//                 //             filename = key.as_str()
-//                 //         ),
-//                 //         data,
-//                 //     )
-//             }
-//         }
-//         None => {}
-//     }
-//
-//     match input.as_str() {
-//         Some(string) => {
-//             // println!("string {string}")
-//         }
-//         None => {}
-//     }
-// }
-
 fn setup_directories(name: &str) {
     fs::create_dir_all(format!(
         "{home_dir}/Repos/colorgen-nvim/{name}/lua/{name}",
@@ -50,7 +9,7 @@ fn setup_directories(name: &str) {
     .expect("Unable to write dir");
 }
 
-fn init(name: &str) {
+fn generate_init(name: &str) {
     let init_data = format!(
         "local M = {{}}
 local theme = require('{name}.theme')
@@ -72,6 +31,7 @@ return M"
 
     fs::write(
         format!(
+            // TODO: use this for current dir to generate colorscheme env::current_dir()
             "{home_dir}/Repos/colorgen-nvim/{name}/lua/{name}/init.lua",
             home_dir = env::var("HOME").unwrap()
         ),
@@ -105,7 +65,26 @@ fn generate_palette(template: &Value, name: &str) {
     }
 }
 
-fn create_colorscheme(template: &Value, name: &str) {}
+fn generate_colorscheme(value: &Value, name: &str) {
+    match value.as_table() {
+        Some(table) => {
+            for (k, v) in table.iter() {
+                if k != "palette" && k != "information" {
+                    println!("{}", k);
+                    println!("{}", v);
+                }
+            }
+        }
+        None => {}
+    }
+
+    match value.as_str() {
+        Some(string) => {
+            println!("string {string}")
+        }
+        None => {}
+    }
+}
 
 fn main() {
     let input = r#"
@@ -142,7 +121,7 @@ fn main() {
 
     let name = template["information"]["name"].as_str().unwrap();
     setup_directories(name);
-    init(name);
+    generate_init(name);
     generate_palette(&template, name);
-    create_colorscheme(&template, name);
+    generate_colorscheme(&template, name);
 }
