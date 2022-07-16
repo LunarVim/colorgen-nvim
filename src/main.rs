@@ -7,6 +7,12 @@ fn setup_directories(name: &str) {
         home_dir = env::var("HOME").unwrap(),
     ))
     .expect("Unable to write dir");
+
+    fs::create_dir_all(format!(
+        "{home_dir}/Repos/colorgen-nvim/{name}/colors",
+        home_dir = env::var("HOME").unwrap(),
+    ))
+    .expect("Unable to write dir");
 }
 
 fn generate_init(name: &str) {
@@ -41,6 +47,25 @@ return M"
     .expect("problem creating palette file");
 }
 
+fn generate_vim_colors_file(name: &str) {
+    let vim_colors_file_data = format!(
+        "lua << EOF
+local {name} = require(\"{name}\")
+{name}.setup({{}})
+EOF"
+    );
+
+    fs::write(
+        format!(
+            "{home_dir}/Repos/colorgen-nvim/{name}/colors/{name}.vim",
+            home_dir = env::var("HOME").unwrap()
+        ),
+        vim_colors_file_data,
+    )
+    // TODO: handle error
+    .expect("problem creating palette file");
+}
+
 fn generate_palette(template: &Value, name: &str) {
     let palette = &template.get("palette");
 
@@ -65,35 +90,34 @@ fn generate_palette(template: &Value, name: &str) {
     }
 }
 
-// hl(0, 'Normal', { fg = c.vscFront, bg = c.vscBack })
+fn write_line(value: &Value, colorscheme_data: &mut String) {
+    for (hl_group, hl_values) in value.as_table().unwrap().iter() {
+        if let Some(string) = hl_values.as_str() {
+            println!("string {string}");
+
+            let values = string.split(' ').collect::<Vec<&str>>();
+
+            // hl(0, 'Normal', { fg = c.vscFront, bg = c.vscBack })
+            *colorscheme_data += format!(
+                "\n  hl(0, \"{hl_group}\", {{ fg = c.{fg}, bg = c.{bg} }})",
+                fg = values[0],
+                bg = values[1]
+            )
+            .as_str();
+        }
+    }
+}
+
 fn generate_colorscheme(value: &Value, colorscheme_data: &mut String) {
     if let Some(table) = value.as_table() {
         for (table_name, val) in table.iter() {
             if table_name != "palette" && table_name != "information" {
-                // println!("table_name: {}", table_name);
-                // println!("val: {}", val);
-
                 *colorscheme_data += format!(
                     "\n
   -- {table_name}"
                 )
                 .as_str();
-                for (hl_group, hl_values) in val.as_table().unwrap().iter() {
-                    if let Some(string) = hl_values.as_str() {
-                        println!("string {string}");
-
-                        let values = string.split(' ').collect::<Vec<&str>>();
-
-                        // hl(0, 'Normal', { fg = c.vscFront, bg = c.vscBack })
-                        // *colorscheme_data += format!("\n  {string}").as_str();
-                        *colorscheme_data += format!(
-                            "\n  hl(0, \"{hl_group}\", {{ fg = c.{fg}, bg = c.{bg} }})",
-                            fg = values[0],
-                            bg = values[1]
-                        )
-                        .as_str();
-                    }
-                }
+                write_line(val, colorscheme_data);
             }
         }
     }
@@ -178,6 +202,7 @@ fn main() {
 
     setup_directories(name);
     generate_init(name);
+    generate_vim_colors_file(name);
     generate_palette(&template, name);
     generate_colorscheme(&template, &mut colorscheme_data);
     generate_theme(&colorscheme_data, name);
