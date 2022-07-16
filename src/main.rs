@@ -153,6 +153,9 @@ return theme";
 
 // TODO: look into preserve order
 
+// TODO: save palette keys don't allow if not in that list
+
+// TODO: I hate how I'm updating this colorscheme string
 fn main() {
     let input = r#"
     [information]
