@@ -73,7 +73,11 @@ fn generate_colorscheme(value: &Value, colorscheme_data: &mut String) {
                 // println!("table_name: {}", table_name);
                 // println!("val: {}", val);
 
-                dbg!(val);
+                *colorscheme_data += format!(
+                    "\n
+  -- {table_name}"
+                )
+                .as_str();
                 for (hl_group, hl_values) in val.as_table().unwrap().iter() {
                     if let Some(string) = hl_values.as_str() {
                         println!("string {string}");
@@ -103,8 +107,7 @@ local c = require('{name}.colors')
 local hl = vim.api.nvim_set_hl
 local theme = {{}}
 
-theme.set_highlights = function()
-",
+theme.set_highlights = function()",
     );
 
     theme_data += colorscheme_data;
