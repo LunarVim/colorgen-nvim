@@ -65,26 +65,87 @@ fn generate_palette(template: &Value, name: &str) {
     }
 }
 
-fn generate_colorscheme(value: &Value, name: &str) {
+// hl(0, 'Normal', { fg = c.vscFront, bg = c.vscBack })
+fn generate_colorscheme(value: &Value, colorscheme_data: &mut String) {
     match value.as_table() {
         Some(table) => {
-            for (k, v) in table.iter() {
-                if k != "palette" && k != "information" {
-                    println!("{}", k);
-                    println!("{}", v);
+            for (table_name, val) in table.iter() {
+                if table_name != "palette" && table_name != "information" {
+                    // println!("table_name: {}", table_name);
+                    // println!("val: {}", val);
+
+                    // generate_colorscheme(val, colorscheme_data)
+                    dbg!(val);
+                    for (hl_group, hl_values) in val.as_table().unwrap().iter() {
+                        match hl_values.as_str() {
+                            Some(string) => {
+                                println!("string {string}");
+
+                                let values = string.split(' ').collect::<Vec<&str>>();
+
+                                // hl(0, 'Normal', { fg = c.vscFront, bg = c.vscBack })
+                                // *colorscheme_data += format!("\n  {string}").as_str();
+                                *colorscheme_data += format!(
+                                    "\nhl(0, {hl_group}, {{ fg = c.{fg}, bg = c.{bg} }})",
+                                    fg = values[0],
+                                    bg = values[1]
+                                )
+                                .as_str();
+                            }
+                            None => {}
+                        }
+                    }
                 }
             }
         }
         None => {}
     }
 
-    match value.as_str() {
-        Some(string) => {
-            println!("string {string}")
-        }
-        None => {}
-    }
+    // match value.as_str() {
+    //     Some(string) => {
+    //         println!("string {string}");
+    //
+    //         let values = string.split(' ').collect::<Vec<&str>>();
+    //
+    //         // hl(0, 'Normal', { fg = c.vscFront, bg = c.vscBack })
+    //         // *colorscheme_data += format!("\n  {string}").as_str();
+    //         *colorscheme_data += format!(
+    //             "\nhl(0, 'Normal', {{ fg = c.{fg}, bg = c.{bg} }})",
+    //             fg = values[0],
+    //             bg = values[1]
+    //         )
+    //         .as_str();
+    //     }
+    //     None => {}
+    // }
 }
+
+fn generate_theme(colorscheme_data: &str, name: &str) {
+    let mut theme_data = String::from(
+        "
+local c = require('vscode.colors')
+
+local hl = vim.api.nvim_set_hl
+local theme = {}
+
+theme.set_highlights = function(opts)
+",
+    );
+
+    theme_data += colorscheme_data;
+
+    fs::write(
+        format!(
+            "{home_dir}/Repos/colorgen-nvim/{name}/lua/{name}/theme.lua",
+            home_dir = env::var("HOME").unwrap()
+        ),
+        theme_data,
+    )
+    // TODO: handle error
+    .expect("problem creating theme file");
+}
+
+// TODO: look into preserve order
 
 fn main() {
     let input = r#"
@@ -108,13 +169,23 @@ fn main() {
 
     [highlights]
       Normal = 'fg bg'
-      SignColumn = '- bg'
+      SignColumn = 'fg bg'
       MsgArea = 'fg bg'
-      ModeMsg = 'fg dark'
+      ModeMsg = 'fg bg'
       MsgSeparator = 'fg bg'
-      SpellBad = 'light_red - u'
-      SpellCap = 'yellow - u'
-      SpellLocal = 'green - u'
+      SpellBad = 'fg bg'
+      SpellCap = 'fg bg'
+      SpellLocal = 'fg bg'
+
+    [LSP]
+      Normal = 'alt_fg alt_bg'
+      SignColumn = 'alt_fg alt_bg'
+      MsgArea = 'alt_fg alt_bg'
+      ModeMsg = 'alt_fg alt_bg'
+      MsgSeparator = 'alt_fg alt_bg'
+      SpellBad = 'alt_fg alt_bg'
+      SpellCap = 'alt_fg alt_bg'
+      SpellLocal = 'alt_fg alt_bg'
     "#;
 
     let template = input.parse::<Value>().unwrap();
@@ -123,5 +194,8 @@ fn main() {
     setup_directories(name);
     generate_init(name);
     generate_palette(&template, name);
-    generate_colorscheme(&template, name);
+    let mut colorscheme_data = String::new();
+    generate_colorscheme(&template, &mut colorscheme_data);
+    // println!("colorscheme afer added vals {}", colorscheme_data);
+    generate_theme(&colorscheme_data, name);
 }
