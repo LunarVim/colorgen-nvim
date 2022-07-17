@@ -76,7 +76,7 @@ fn generate_palette(template: &Value, name: &str) {
             palette_data += format!("\n  {key} = {val},").as_str();
         }
         palette_data += "\n}";
-        palette_data += "\n\nreturn";
+        palette_data += "\n\nreturn colors";
 
         fs::write(
             format!(
@@ -90,20 +90,109 @@ fn generate_palette(template: &Value, name: &str) {
     }
 }
 
+fn add_style_options(style: &str) -> String {
+    let mut style_options = String::new();
+    //TODO: let style_options = style.chars().map(|option| match option {...} ).join(", ")
+    for option in style.chars() {
+        match option {
+            'o' => style_options += "standout=true, ",
+            'u' => style_options += "underline=true, ",
+            'c' => style_options += "undercurl=true, ",
+            'd' => style_options += "underdouble=true, ",
+            't' => style_options += "underdotted=true, ",
+            'h' => style_options += "underdashed=true, ",
+            's' => style_options += "strikethrough=true, ",
+            'i' => style_options += "italic=true, ",
+            'b' => style_options += "bold=true, ",
+            'r' => style_options += "reverse=true, ",
+            'n' => style_options += "nocombine=true, ",
+            _ => panic!("invalid style option! {option}"),
+        }
+    }
+    style_options
+}
+
 fn write_line(value: &Value, colorscheme_data: &mut String) {
     for (hl_group, hl_values) in value.as_table().unwrap().iter() {
         if let Some(string) = hl_values.as_str() {
             println!("string {string}");
 
+            // I think you could refactor it like ```rust let fg = if let Some("-") = values.get(0) { "NONE" } else if let Some(fg) = values.get(0) { fg } else { "None" } ```
+
+            //              • fg (or foreground): color name or "#RRGGBB",
+            //              • bg (or background): color name or "#RRGGBB",
+            //              • bold: boolean b
+
+            //              • standout: boolean o
+            //              • underline: boolean u
+            //              • undercurl: boolean c
+            //              • underdouble: boolean d
+            //              • underdotted: boolean t
+            //              • underdashed: boolean h
+            //              • strikethrough: boolean s
+            //              • italic: boolean i
+            //              • reverse: boolean r
+            //              • nocombine: boolean n
+
+            //              • sp (or special): color name or "#RRGGBB"
+            //              • blend: integer between 0 and 100
+            //              • link: name of another highlight group to link
+            // any time there is a - it is meant tobe skipped or set to NONE
             let values = string.split(' ').collect::<Vec<&str>>();
 
-            // hl(0, 'Normal', { fg = c.vscFront, bg = c.vscBack })
-            *colorscheme_data += format!(
-                "\n  hl(0, \"{hl_group}\", {{ fg = c.{fg}, bg = c.{bg} }})",
-                fg = values[0],
-                bg = values[1]
-            )
-            .as_str();
+            match values[..] {
+                [fg] => {
+                    let fg = if fg == "-" {
+                        "'NONE'".into()
+                    } else {
+                        format!("c.{fg}")
+                    };
+
+                    *colorscheme_data +=
+                        format!("\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = 'NONE' }})",)
+                            .as_str();
+                }
+                [fg, bg] => {
+                    let fg = if fg == "-" {
+                        "'NONE'".into()
+                    } else {
+                        format!("c.{fg}")
+                    };
+
+                    let bg = if bg == "-" {
+                        "'NONE'".into()
+                    } else {
+                        format!("c.{bg}")
+                    };
+
+                    // TODO: std::fmt::Write; write!(string, "hello {variable}");
+                    *colorscheme_data +=
+                        format!("\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg} }})",).as_str();
+                }
+
+                [fg, bg, style] => {
+                    let fg = if fg == "-" {
+                        "'NONE'".into()
+                    } else {
+                        format!("c.{fg}")
+                    };
+
+                    let bg = if bg == "-" {
+                        "'NONE'".into()
+                    } else {
+                        format!("c.{bg}")
+                    };
+
+                    // TODO: std::fmt::Write; write!(string, "hello {variable}");
+                    *colorscheme_data += format!(
+                        "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg}, {style_options} }})",
+                        style_options = add_style_options(style)
+                    )
+                    .as_str();
+                }
+
+                _ => {}
+            }
         }
     }
 }
@@ -126,7 +215,7 @@ fn generate_colorscheme(value: &Value, colorscheme_data: &mut String) {
 fn generate_theme(colorscheme_data: &str, name: &str) {
     let mut theme_data = format!(
         "
-local c = require('{name}.colors')
+local c = require('{name}.palette')
 
 local hl = vim.api.nvim_set_hl
 local theme = {{}}
@@ -159,16 +248,16 @@ return theme";
 fn main() {
     let input = r#"
     [information]
-      name = 'onedarker'
+      name = 'imlovinit'
       background = 'dark'
       author = 'Christian Chiarulli <chrisatmachine@gmail.com>'
 
     [palette]
-      fg = '#abb2bf'
-      bg = '#1e222a'
+      fg = '#DA291C'
+      bg = '#27251F'
 
-      alt_fg = '#8b92a8'
-      alt_bg = '#1b1f27'
+      alt_fg = '#FFC72C'
+      alt_bg = '#27251F'
       dark = '#1b1f27'
       accent = '#545862'
       popup_back = '#1e222a'
@@ -177,7 +266,7 @@ fn main() {
 
 
     [highlights]
-      Normal = 'fg bg'
+      Normal = 'fg -'
       SignColumn = 'fg bg'
       MsgArea = 'fg bg'
       ModeMsg = 'fg bg'
@@ -187,7 +276,7 @@ fn main() {
       SpellLocal = 'fg bg'
 
     [LSP]
-      Normal = 'alt_fg alt_bg'
+      Normal = 'alt_fg alt_bg biu'
       SignColumn = 'alt_fg alt_bg'
       MsgArea = 'alt_fg alt_bg'
       ModeMsg = 'alt_fg alt_bg'
