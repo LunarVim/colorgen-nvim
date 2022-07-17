@@ -1,18 +1,9 @@
-use std::{env, fs};
+use std::fs;
 use toml::Value;
 
 fn setup_directories(name: &str) {
-    fs::create_dir_all(format!(
-        "{home_dir}/Repos/colorgen-nvim/{name}/lua/{name}",
-        home_dir = env::var("HOME").unwrap(),
-    ))
-    .expect("Unable to write dir");
-
-    fs::create_dir_all(format!(
-        "{home_dir}/Repos/colorgen-nvim/{name}/colors",
-        home_dir = env::var("HOME").unwrap(),
-    ))
-    .expect("Unable to write dir");
+    fs::create_dir_all(format!("{name}/lua/{name}")).expect("Unable to write dir");
+    fs::create_dir_all(format!("{name}/colors")).expect("Unable to write dir");
 }
 
 fn generate_init(name: &str) {
@@ -35,16 +26,9 @@ end
 return M"
     );
 
-    fs::write(
-        format!(
-            // TODO: use this for current dir to generate colorscheme env::current_dir()
-            "{home_dir}/Repos/colorgen-nvim/{name}/lua/{name}/init.lua",
-            home_dir = env::var("HOME").unwrap()
-        ),
-        init_data,
-    )
-    // TODO: handle error
-    .expect("problem creating palette file");
+    fs::write(format!("{name}/lua/{name}/init.lua"), init_data)
+        // TODO: handle error
+        .expect("problem creating palette file");
 }
 
 fn generate_vim_colors_file(name: &str) {
@@ -55,15 +39,9 @@ local {name} = require(\"{name}\")
 EOF"
     );
 
-    fs::write(
-        format!(
-            "{home_dir}/Repos/colorgen-nvim/{name}/colors/{name}.vim",
-            home_dir = env::var("HOME").unwrap()
-        ),
-        vim_colors_file_data,
-    )
-    // TODO: handle error
-    .expect("problem creating palette file");
+    fs::write(format!("{name}/colors/{name}.vim",), vim_colors_file_data)
+        // TODO: handle error
+        .expect("problem creating palette file");
 }
 
 fn generate_palette(template: &Value, name: &str) {
@@ -78,15 +56,9 @@ fn generate_palette(template: &Value, name: &str) {
         palette_data += "\n}";
         palette_data += "\n\nreturn";
 
-        fs::write(
-            format!(
-                "{home_dir}/Repos/colorgen-nvim/{name}/lua/{name}/palette.lua",
-                home_dir = env::var("HOME").unwrap()
-            ),
-            palette_data,
-        )
-        // TODO: handle error
-        .expect("problem creating palette file");
+        fs::write(format!("{name}/lua/{name}/palette.lua"), palette_data)
+            // TODO: handle error
+            .expect("problem creating palette file");
     }
 }
 
@@ -140,15 +112,9 @@ theme.set_highlights = function()",
 
 return theme";
 
-    fs::write(
-        format!(
-            "{home_dir}/Repos/colorgen-nvim/{name}/lua/{name}/theme.lua",
-            home_dir = env::var("HOME").unwrap()
-        ),
-        theme_data,
-    )
-    // TODO: handle error
-    .expect("problem creating theme file");
+    fs::write(format!("{name}/lua/{name}/theme.lua"), theme_data)
+        // TODO: handle error
+        .expect("problem creating theme file");
 }
 
 // TODO: look into preserve order
