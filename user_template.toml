@@ -1,0 +1,37 @@
+[information]
+name = 'imlovinit'
+background = 'dark'
+author = 'Christian Chiarulli <chrisatmachine@gmail.com>'
+
+[palette]
+fg = '#DA291C'
+bg = '#27251F'
+
+alt_fg = '#FFC72C'
+alt_bg = '#27251F'
+dark = '#1b1f27'
+accent = '#545862'
+popup_back = '#1e222a'
+search_orange = '#613214'
+line = '#282C34'
+
+
+[highlights]
+Normal = 'fg -'
+SignColumn = 'fg bg'
+MsgArea = 'fg bg'
+ModeMsg = 'fg bg'
+MsgSeparator = 'fg bg'
+SpellBad = 'fg bg'
+SpellCap = 'fg bg'
+SpellLocal = 'fg bg'
+
+[LSP]
+Normal = 'alt_fg alt_bg biu'
+SignColumn = 'alt_fg alt_bg'
+MsgArea = 'alt_fg alt_bg'
+ModeMsg = 'alt_fg alt_bg'
+MsgSeparator = 'alt_fg alt_bg'
+SpellBad = 'alt_fg alt_bg'
+SpellCap = 'alt_fg alt_bg'
+SpellLocal = 'alt_fg alt_bg'

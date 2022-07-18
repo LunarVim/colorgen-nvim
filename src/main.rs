@@ -1,5 +1,8 @@
 use std::fs;
 use toml::Value;
+mod args;
+use args::ColorgenArgs;
+use clap::Parser;
 
 fn setup_directories(name: &str) {
     fs::create_dir_all(format!("{name}/lua/{name}")).expect("Unable to write dir");
@@ -87,29 +90,11 @@ fn add_style_options(style: &str) -> String {
 fn write_line(value: &Value, colorscheme_data: &mut String) {
     for (hl_group, hl_values) in value.as_table().unwrap().iter() {
         if let Some(string) = hl_values.as_str() {
-            println!("string {string}");
-
-            // I think you could refactor it like ```rust let fg = if let Some("-") = values.get(0) { "NONE" } else if let Some(fg) = values.get(0) { fg } else { "None" } ```
-
-            //              • fg (or foreground): color name or "#RRGGBB",
-            //              • bg (or background): color name or "#RRGGBB",
-            //              • bold: boolean b
-
-            //              • standout: boolean o
-            //              • underline: boolean u
-            //              • undercurl: boolean c
-            //              • underdouble: boolean d
-            //              • underdotted: boolean t
-            //              • underdashed: boolean h
-            //              • strikethrough: boolean s
-            //              • italic: boolean i
-            //              • reverse: boolean r
-            //              • nocombine: boolean n
-
+            // TODO: I think you could refactor it like ```rust let fg = if let Some("-") = values.get(0) { "NONE" } else if let Some(fg) = values.get(0) { fg } else { "None" } ```
             //              • sp (or special): color name or "#RRGGBB"
             //              • blend: integer between 0 and 100
             //              • link: name of another highlight group to link
-            // any time there is a - it is meant tobe skipped or set to NONE
+            // any time there is a - it is meant to be skipped or set to NONE
             let values = string.split(' ').collect::<Vec<&str>>();
 
             match values[..] {
@@ -212,47 +197,11 @@ return theme";
 
 // TODO: I hate how I'm updating this colorscheme string
 fn main() {
-    let input = r#"
-    [information]
-      name = 'imlovinit'
-      background = 'dark'
-      author = 'Christian Chiarulli <chrisatmachine@gmail.com>'
+    let args: ColorgenArgs = ColorgenArgs::parse();
 
-    [palette]
-      fg = '#DA291C'
-      bg = '#27251F'
+    let content = std::fs::read_to_string(args.filename).unwrap();
 
-      alt_fg = '#FFC72C'
-      alt_bg = '#27251F'
-      dark = '#1b1f27'
-      accent = '#545862'
-      popup_back = '#1e222a'
-      search_orange = '#613214'
-      line = '#282C34'
-
-
-    [highlights]
-      Normal = 'fg -'
-      SignColumn = 'fg bg'
-      MsgArea = 'fg bg'
-      ModeMsg = 'fg bg'
-      MsgSeparator = 'fg bg'
-      SpellBad = 'fg bg'
-      SpellCap = 'fg bg'
-      SpellLocal = 'fg bg'
-
-    [LSP]
-      Normal = 'alt_fg alt_bg biu'
-      SignColumn = 'alt_fg alt_bg'
-      MsgArea = 'alt_fg alt_bg'
-      ModeMsg = 'alt_fg alt_bg'
-      MsgSeparator = 'alt_fg alt_bg'
-      SpellBad = 'alt_fg alt_bg'
-      SpellCap = 'alt_fg alt_bg'
-      SpellLocal = 'alt_fg alt_bg'
-    "#;
-
-    let template = input.parse::<Value>().unwrap();
+    let template = content.parse::<Value>().unwrap();
 
     let name = template["information"]["name"].as_str().unwrap();
 
