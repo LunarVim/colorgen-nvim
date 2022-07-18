@@ -89,6 +89,17 @@ fn add_style_options(style: &str) -> String {
     style_options
 }
 
+fn parse_value(value: &str) -> String {
+    let re = Regex::new(r"^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9A-F]{3}|[0-9A-F]{6})$").unwrap();
+    if value == "-" {
+        "'NONE'".into()
+    } else if re.is_match(value) {
+        format!("'{value}'")
+    } else {
+        format!("c.{value}")
+    }
+}
+
 fn write_line(value: &Value, colorscheme_data: &mut String) {
     for (hl_group, hl_values) in value.as_table().unwrap().iter() {
         if let Some(string) = hl_values.as_str() {
@@ -99,65 +110,30 @@ fn write_line(value: &Value, colorscheme_data: &mut String) {
             // any time there is a - it is meant to be skipped or set to NONE
             let values = string.split(' ').collect::<Vec<&str>>();
 
-            let re = Regex::new(r"^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9A-F]{3}|[0-9A-F]{6})$").unwrap();
-
             match values[..] {
                 [fg] => {
-                    // TODO: break this out into a function
-                    let fg = if fg == "-" {
-                        "'NONE'".into()
-                    } else if re.is_match(fg) {
-                        format!("'{fg}'")
-                    } else {
-                        format!("c.{fg}")
-                    };
-
-                    *colorscheme_data +=
-                        format!("\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = 'NONE' }})",)
-                            .as_str();
+                    *colorscheme_data += format!(
+                        "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = 'NONE' }})",
+                        fg = parse_value(fg)
+                    )
+                    .as_str();
                 }
                 [fg, bg] => {
-                    let fg = if fg == "-" {
-                        "'NONE'".into()
-                    } else if re.is_match(fg) {
-                        format!("'{fg}'")
-                    } else {
-                        format!("c.{fg}")
-                    };
-
-                    let bg = if bg == "-" {
-                        "'NONE'".into()
-                    } else if re.is_match(bg) {
-                        format!("'{bg}'")
-                    } else {
-                        format!("c.{bg}")
-                    };
-
                     // TODO: std::fmt::Write; write!(string, "hello {variable}");
-                    *colorscheme_data +=
-                        format!("\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg} }})",).as_str();
+                    *colorscheme_data += format!(
+                        "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg} }})",
+                        fg = parse_value(fg),
+                        bg = parse_value(bg)
+                    )
+                    .as_str();
                 }
 
                 [fg, bg, style] => {
-                    let fg = if fg == "-" {
-                        "'NONE'".into()
-                    } else if re.is_match(fg) {
-                        format!("'{fg}'")
-                    } else {
-                        format!("c.{fg}")
-                    };
-
-                    let bg = if bg == "-" {
-                        "'NONE'".into()
-                    } else if re.is_match(bg) {
-                        format!("'{bg}'")
-                    } else {
-                        format!("c.{bg}")
-                    };
-
                     // TODO: std::fmt::Write; write!(string, "hello {variable}");
                     *colorscheme_data += format!(
                         "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg}, {style_options} }})",
+                        fg = parse_value(fg),
+                        bg = parse_value(bg),
                         style_options = add_style_options(style)
                     )
                     .as_str();
