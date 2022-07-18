@@ -11,9 +11,6 @@ categories = ["command-line-utilities", "compilers", "config"]
 keywords = ["neovim", "nvim", "colorscheme", "toml", "theme"]
 
 
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 clap = { version = "3.2.12", features = ["derive"] }
 toml = "0.5.9"
