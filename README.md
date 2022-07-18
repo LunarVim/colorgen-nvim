@@ -4,7 +4,13 @@ A colorscheme generator for Neovim
 
 ## Installing
 
-For now we need to install via git using cargo
+From `crates.io`:
+
+```sh
+cargo install colorscheme-nvim
+```
+
+For development version
 
 ```sh
 cargo install --git https://github.com/ChristianChiarulli/colorgen-nvim
