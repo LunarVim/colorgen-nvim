@@ -97,7 +97,7 @@ fn add_style_options(style: &str) -> String {
 }
 
 fn parse_value(value: &str) -> String {
-    let re = Regex::new(r"^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9A-F]{3}|[0-9A-F]{6})$").unwrap();
+    let re = Regex::new(r"^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9A-F]{3}|[0-9A-F]{6})$").expect("Invalid Expression");
     if value == "-" {
         "'NONE'".into()
     } else if re.is_match(value) {
