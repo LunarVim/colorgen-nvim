@@ -73,6 +73,20 @@ The format is `foreground background style`
 
 The `-` is used skip a particular section and replace it with `NONE`
 
+Style Options:
+
+  - `o`: standout
+  - `u`: underline
+  - `c`: undercurl
+  - `d`: underdouble
+  - `t`: underdotted
+  - `h`: underdashed
+  - `s`: strikethrough
+  - `i`: italic
+  - `b`: bold
+  - `r`: reverse
+  - `n`: nocombine
+
 ## Inspiration and Credits
 
 - [vim-felipec](https://github.com/felipec/vim-felipec)
