@@ -10,13 +10,19 @@ fn setup_directories(name: &str) {
     fs::create_dir_all(format!("{name}/colors")).expect("Unable to write dir");
 }
 
-fn generate_init(name: &str) {
+fn generate_init(name: &str, background: &str) {
+    if background != "dark" || background != "light" {
+        panic!("background must be set to dark or light");
+    }
+
     let init_data = format!(
         "local M = {{}}
 local theme = require('{name}.theme')
 
 M.setup = function()
   vim.cmd('hi clear')
+
+  vim.o.background = {background}
   if vim.fn.exists('syntax_on') then
     vim.cmd('syntax reset')
   end
@@ -188,7 +194,6 @@ return theme";
 
 // TODO: I hate how I'm updating this colorscheme string
 
-// TODO: handle different backgrounds (dark, light)
 fn main() {
     let args: ColorgenArgs = ColorgenArgs::parse();
 
@@ -198,10 +203,12 @@ fn main() {
 
     let name = template["information"]["name"].as_str().unwrap();
 
+    let background = template["information"]["background"].as_str().unwrap();
+
     let mut colorscheme_data = String::new();
 
     setup_directories(name);
-    generate_init(name);
+    generate_init(name, background);
     generate_vim_colors_file(name);
     generate_palette(&template, name);
     generate_colorscheme(&template, &mut colorscheme_data);
