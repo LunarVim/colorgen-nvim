@@ -141,7 +141,7 @@ fn write_line(value: &Value, colorscheme_data: &mut String) {
 
                 [fg, bg, style, sp] => {
                     *colorscheme_data += format!(
-                        "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg}, sp = {sp} {style_options} }})",
+                        "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg}, sp = {sp}, {style_options} }})",
                         fg = parse_value(fg),
                         bg = parse_value(bg),
                         sp = parse_value(sp),
