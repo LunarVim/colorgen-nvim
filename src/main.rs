@@ -3,6 +3,7 @@ use toml::Value;
 mod args;
 use args::ColorgenArgs;
 use clap::Parser;
+use regex::Regex;
 
 fn setup_directories(name: &str) {
     fs::create_dir_all(format!("{name}/lua/{name}")).expect("Unable to write dir");
@@ -81,6 +82,7 @@ fn add_style_options(style: &str) -> String {
             'b' => style_options += "bold=true, ",
             'r' => style_options += "reverse=true, ",
             'n' => style_options += "nocombine=true, ",
+            '-' => {}
             _ => panic!("invalid style option! {option}"),
         }
     }
@@ -97,10 +99,15 @@ fn write_line(value: &Value, colorscheme_data: &mut String) {
             // any time there is a - it is meant to be skipped or set to NONE
             let values = string.split(' ').collect::<Vec<&str>>();
 
+            let re = Regex::new(r"^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9A-F]{3}|[0-9A-F]{6})$").unwrap();
+
             match values[..] {
                 [fg] => {
+                    // TODO: break this out into a function
                     let fg = if fg == "-" {
                         "'NONE'".into()
+                    } else if re.is_match(fg) {
+                        format!("'{fg}'")
                     } else {
                         format!("c.{fg}")
                     };
@@ -112,12 +119,16 @@ fn write_line(value: &Value, colorscheme_data: &mut String) {
                 [fg, bg] => {
                     let fg = if fg == "-" {
                         "'NONE'".into()
+                    } else if re.is_match(fg) {
+                        format!("'{fg}'")
                     } else {
                         format!("c.{fg}")
                     };
 
                     let bg = if bg == "-" {
                         "'NONE'".into()
+                    } else if re.is_match(bg) {
+                        format!("'{bg}'")
                     } else {
                         format!("c.{bg}")
                     };
@@ -130,12 +141,16 @@ fn write_line(value: &Value, colorscheme_data: &mut String) {
                 [fg, bg, style] => {
                     let fg = if fg == "-" {
                         "'NONE'".into()
+                    } else if re.is_match(fg) {
+                        format!("'{fg}'")
                     } else {
                         format!("c.{fg}")
                     };
 
                     let bg = if bg == "-" {
                         "'NONE'".into()
+                    } else if re.is_match(bg) {
+                        format!("'{bg}'")
                     } else {
                         format!("c.{bg}")
                     };
@@ -196,6 +211,10 @@ return theme";
 // TODO: save palette keys don't allow if not in that list
 
 // TODO: I hate how I'm updating this colorscheme string
+
+// TODO: handle hex colors
+
+// TODO: handle different backgrounds (dark, light)
 fn main() {
     let args: ColorgenArgs = ColorgenArgs::parse();
 
