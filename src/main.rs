@@ -86,6 +86,7 @@ fn add_style_options(style: &str) -> String {
             _ => panic!("invalid style option! {option}"),
         }
     }
+    style_options.pop();
     style_options
 }
 
@@ -119,7 +120,6 @@ fn write_line(value: &Value, colorscheme_data: &mut String) {
                     .as_str();
                 }
                 [fg, bg] => {
-                    // TODO: std::fmt::Write; write!(string, "hello {variable}");
                     *colorscheme_data += format!(
                         "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg} }})",
                         fg = parse_value(fg),
