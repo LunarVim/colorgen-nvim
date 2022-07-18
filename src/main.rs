@@ -212,8 +212,6 @@ return theme";
 
 // TODO: I hate how I'm updating this colorscheme string
 
-// TODO: handle hex colors
-
 // TODO: handle different backgrounds (dark, light)
 fn main() {
     let args: ColorgenArgs = ColorgenArgs::parse();
