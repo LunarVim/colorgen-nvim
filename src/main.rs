@@ -37,7 +37,6 @@ return M"
     );
 
     fs::write(format!("{name}/lua/{name}/init.lua"), init_data)
-        // TODO: handle error
         .expect("problem creating palette file");
 }
 
@@ -50,7 +49,6 @@ EOF"
     );
 
     fs::write(format!("{name}/colors/{name}.vim",), vim_colors_file_data)
-        // TODO: handle error
         .expect("problem creating palette file");
 }
 
@@ -74,7 +72,6 @@ fn generate_palette(template: &Value, name: &str) {
 
 fn add_style_options(style: &str) -> String {
     let mut style_options = String::new();
-    //TODO: let style_options = style.chars().map(|option| match option {...} ).join(", ")
     for option in style.chars() {
         match option {
             'o' => style_options += "standout=true, ",
@@ -97,7 +94,8 @@ fn add_style_options(style: &str) -> String {
 }
 
 fn parse_value(value: &str) -> String {
-    let re = Regex::new(r"^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9A-F]{3}|[0-9A-F]{6})$").expect("Invalid Expression");
+    let re = Regex::new(r"^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9A-F]{3}|[0-9A-F]{6})$")
+        .expect("Invalid Expression");
     if value == "-" {
         "'NONE'".into()
     } else if re.is_match(value) {
@@ -110,11 +108,8 @@ fn parse_value(value: &str) -> String {
 fn write_line(value: &Value, colorscheme_data: &mut String) {
     for (hl_group, hl_values) in value.as_table().unwrap().iter() {
         if let Some(string) = hl_values.as_str() {
-            // TODO: I think you could refactor it like ```rust let fg = if let Some("-") = values.get(0) { "NONE" } else if let Some(fg) = values.get(0) { fg } else { "None" } ```
-            //              • sp (or special): color name or "#RRGGBB"
-            //              • blend: integer between 0 and 100
-            //              • link: name of another highlight group to link
-            // any time there is a - it is meant to be skipped or set to NONE
+            // TODO: • blend: integer between 0 and 100
+            // TODO: • link: name of another highlight group to link
             let values = string.split(' ').collect::<Vec<&str>>();
 
             match values[..] {
@@ -135,7 +130,6 @@ fn write_line(value: &Value, colorscheme_data: &mut String) {
                 }
 
                 [fg, bg, style] => {
-                    // TODO: std::fmt::Write; write!(string, "hello {variable}");
                     *colorscheme_data += format!(
                         "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg}, {style_options} }})",
                         fg = parse_value(fg),
@@ -145,6 +139,16 @@ fn write_line(value: &Value, colorscheme_data: &mut String) {
                     .as_str();
                 }
 
+                [fg, bg, style, sp] => {
+                    *colorscheme_data += format!(
+                        "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg}, sp = {sp} {style_options} }})",
+                        fg = parse_value(fg),
+                        bg = parse_value(bg),
+                        sp = parse_value(sp),
+                        style_options = add_style_options(style)
+                    )
+                    .as_str();
+                }
                 _ => {}
             }
         }
@@ -184,16 +188,12 @@ theme.set_highlights = function()",
 return theme";
 
     fs::write(format!("{name}/lua/{name}/theme.lua"), theme_data)
-        // TODO: handle error
         .expect("problem creating theme file");
 }
 
 // TODO: look into preserve order
-
 // TODO: save palette keys don't allow if not in that list
-
 // TODO: I hate how I'm updating this colorscheme string
-
 fn main() {
     let args: ColorgenArgs = ColorgenArgs::parse();
 
