@@ -7,7 +7,7 @@ A colorscheme generator for Neovim
 From `crates.io`:
 
 ```sh
-cargo install colorscheme-nvim
+cargo install colorgen-nvim
 ```
 
 For development version
