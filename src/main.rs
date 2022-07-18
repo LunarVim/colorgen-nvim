@@ -11,7 +11,7 @@ fn setup_directories(name: &str) {
 }
 
 fn generate_init(name: &str, background: &str) {
-    if background != "dark" || background != "light" {
+    if background != "dark" && background != "light" {
         panic!("background must be set to dark or light");
     }
 
