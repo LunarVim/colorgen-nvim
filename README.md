@@ -71,7 +71,7 @@ Example:
  Comment = 'gray - i'
 ```
 
-The format is `foreground background style`
+The format is `foreground background style special`
 
 The `-` is used skip a particular section and replace it with `NONE`
 
