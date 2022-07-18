@@ -22,7 +22,7 @@ local theme = require('{name}.theme')
 M.setup = function()
   vim.cmd('hi clear')
 
-  vim.o.background = {background}
+  vim.o.background = '{background}'
   if vim.fn.exists('syntax_on') then
     vim.cmd('syntax reset')
   end
