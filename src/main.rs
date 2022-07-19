@@ -97,9 +97,7 @@ fn parse_value(value: &str) -> String {
     let re = Regex::new(r"^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9A-F]{3}|[0-9A-F]{6})$")
         .expect("Invalid Expression");
 
-    if value.contains("link:") {
-        format!("'{}'", value.replace("link:", ""))
-    } else if value == "-" {
+    if value == "-" {
         "'NONE'".into()
     } else if re.is_match(value) {
         format!("'{value}'")
@@ -125,11 +123,19 @@ fn write_line(value: &Value, colorscheme_data: &mut String) {
             match values[..] {
                 // also handles link
                 [fg] => {
-                    *colorscheme_data += format!(
-                        "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = 'NONE' }})",
-                        fg = parse_value(fg)
-                    )
-                    .as_str();
+                    if fg.contains("link:") {
+                        *colorscheme_data += format!(
+                            "\n  hl(0, \"{hl_group}\", {{ link = '{link}' }})",
+                            link = fg.to_string().replace("link:", "")
+                        )
+                        .as_str();
+                    } else {
+                        *colorscheme_data += format!(
+                            "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = 'NONE' }})",
+                            fg = parse_value(fg)
+                        )
+                        .as_str();
+                    }
                 }
                 [fg, bg] => {
                     *colorscheme_data += format!(
