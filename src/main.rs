@@ -97,7 +97,7 @@ fn parse_value(value: &str) -> String {
     let re = Regex::new(r"^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9A-F]{3}|[0-9A-F]{6})$")
         .expect("Invalid Expression");
 
-    if value.contains(":link") {
+    if value.contains("link:") {
         format!("'{}'", value.replace(":link", ""))
     } else if value == "-" {
         "'NONE'".into()
