@@ -162,7 +162,7 @@ fn write_line(value: &Value, colorscheme_data: &mut String) {
                 }
                 [fg, bg, style, sp, blend] => {
                     *colorscheme_data += format!(
-                        "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg}, sp = {sp}, {style_options}, {blend} }})",
+                        "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg}, sp = {sp}, {style_options}blend={blend} }})",
                         fg = parse_value(fg),
                         bg = parse_value(bg),
                         sp = parse_value(sp),

@@ -73,7 +73,7 @@
  SpellLocal = 'green - u'
  SpellRare = 'purple - u'
  NormalNC = 'fg bg'
- Pmenu = 'light_gray tree_gray'
+ Pmenu = 'light_gray tree_gray - - 50'
  PmenuSel = '- ui2_blue'
  WildMenu = 'fg ui2_blue'
  CursorLineNr = 'light_gray - b'
@@ -160,7 +160,7 @@
  TabLineFill = 'line line'
 
 [Treesitter]
- TSComment = 'gray'
+ TSComment = 'link:Comment'
  TSAnnotation = 'blue'
  TSAttribute = 'cyan'
  TSConstructor = 'cyan'
