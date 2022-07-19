@@ -96,7 +96,10 @@ fn add_style_options(style: &str) -> String {
 fn parse_value(value: &str) -> String {
     let re = Regex::new(r"^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9A-F]{3}|[0-9A-F]{6})$")
         .expect("Invalid Expression");
-    if value == "-" {
+
+    if value.contains(":link") {
+        value.replace(":link", "")
+    } else if value == "-" {
         "'NONE'".into()
     } else if re.is_match(value) {
         format!("'{value}'")
@@ -105,14 +108,22 @@ fn parse_value(value: &str) -> String {
     }
 }
 
+fn parse_blend(blend: &str) -> String {
+    let blend = blend.parse::<i32>().unwrap();
+
+    if blend > 100 || blend < 0 {
+        panic!("blend must be between 0 and 100");
+    }
+    format!("{blend}")
+}
+
 fn write_line(value: &Value, colorscheme_data: &mut String) {
     for (hl_group, hl_values) in value.as_table().unwrap().iter() {
         if let Some(string) = hl_values.as_str() {
-            // TODO: • blend: integer between 0 and 100
-            // TODO: • link: name of another highlight group to link
             let values = string.split(' ').collect::<Vec<&str>>();
 
             match values[..] {
+                // also handles link
                 [fg] => {
                     *colorscheme_data += format!(
                         "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = 'NONE' }})",
@@ -145,6 +156,17 @@ fn write_line(value: &Value, colorscheme_data: &mut String) {
                         fg = parse_value(fg),
                         bg = parse_value(bg),
                         sp = parse_value(sp),
+                        style_options = add_style_options(style)
+                    )
+                    .as_str();
+                }
+                [fg, bg, style, sp, blend] => {
+                    *colorscheme_data += format!(
+                        "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg}, sp = {sp}, {style_options}, {blend} }})",
+                        fg = parse_value(fg),
+                        bg = parse_value(bg),
+                        sp = parse_value(sp),
+                        blend = parse_blend(blend),
                         style_options = add_style_options(style)
                     )
                     .as_str();
@@ -193,7 +215,6 @@ return theme";
 
 // TODO: look into preserve order
 // TODO: save palette keys don't allow if not in that list
-// TODO: I hate how I'm updating this colorscheme string
 fn main() {
     let args: ColorgenArgs = ColorgenArgs::parse();
 
