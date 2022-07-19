@@ -70,14 +70,23 @@ Example:
  SpellLocal = 'green - u'
  SpellRare = 'purple - u'
  NormalNC = 'fg bg'
- Pmenu = 'red bg'
+ Pmenu = 'red bg - - 50'
  PmenuSel = '- blue'
  WildMenu = 'fg blue'
  CursorLineNr = 'light_gray - b'
  Comment = 'gray - i'
+
+[Treesitter]
+ TSComment = 'link:Comment'
+ TSAnnotation = 'blue'
+ TSAttribute = 'cyan'
+ TSConstructor = 'cyan'
+ TSType = 'cyan'
 ```
 
-The format is `foreground background style special`
+The format is `foreground background style special blend`
+
+You can also choose to link a highlight group to another by passing `link:<name of hl group>`
 
 The `-` is used to skip a particular section and replace it with `NONE`
 
