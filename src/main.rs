@@ -98,7 +98,7 @@ fn parse_value(value: &str) -> String {
         .expect("Invalid Expression");
 
     if value.contains("link:") {
-        format!("'{}'", value.replace(":link", ""))
+        format!("'{}'", value.replace("link:", ""))
     } else if value == "-" {
         "'NONE'".into()
     } else if re.is_match(value) {
