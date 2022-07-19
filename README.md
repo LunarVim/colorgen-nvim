@@ -104,6 +104,12 @@ Style Options:
 - `r`: reverse
 - `n`: nocombine
 
+TODO:
+
+- support transparent background (this could get tricky with other plugins, considering bg:optional, if you put that then setting the transparent flag will set it to none) 
+
+- italic comments
+
 ## Inspiration and Credits
 
 - [vim-felipec](https://github.com/felipec/vim-felipec)
