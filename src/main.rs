@@ -58,14 +58,13 @@ fn generate_palette(template: &Value, name: &str) {
     if let Some(palette) = palette {
         let mut palette_data = String::from("local colors = {");
 
-        for (key, val) in palette.as_table().unwrap().iter() {
+        for (key, val) in palette.as_table().expect("Value not a table").iter() {
             palette_data += format!("\n  {key} = {val},").as_str();
         }
         palette_data += "\n}";
         palette_data += "\n\nreturn colors";
 
         fs::write(format!("{name}/lua/{name}/palette.lua"), palette_data)
-            // TODO: handle error
             .expect("problem creating palette file");
     }
 }
@@ -107,7 +106,7 @@ fn parse_value(value: &str) -> String {
 }
 
 fn parse_blend(blend: &str) -> String {
-    let blend = blend.parse::<i32>().unwrap();
+    let blend = blend.parse::<i32>().expect("Could not parse int");
 
     if blend > 100 || blend < 0 {
         panic!("blend must be between 0 and 100");
@@ -116,7 +115,7 @@ fn parse_blend(blend: &str) -> String {
 }
 
 fn write_line(value: &Value, colorscheme_data: &mut String) {
-    for (hl_group, hl_values) in value.as_table().unwrap().iter() {
+    for (hl_group, hl_values) in value.as_table().expect("Value not a table").iter() {
         if let Some(string) = hl_values.as_str() {
             let values = string.split(' ').collect::<Vec<&str>>();
 
@@ -224,13 +223,13 @@ return theme";
 fn main() {
     let args: ColorgenArgs = ColorgenArgs::parse();
 
-    let content = std::fs::read_to_string(args.filename).unwrap();
+    let content = std::fs::read_to_string(args.filename).expect("Invalid filename");
 
-    let template = content.parse::<Value>().unwrap();
+    let template = content.parse::<Value>().expect("Invalid Toml");
 
-    let name = template["information"]["name"].as_str().unwrap();
+    let name = template["information"]["name"].as_str().expect("Must contain an information table and name");
 
-    let background = template["information"]["background"].as_str().unwrap();
+    let background = template["information"]["background"].as_str().expect("Must contain an information table and background");
 
     let mut colorscheme_data = String::new();
 
