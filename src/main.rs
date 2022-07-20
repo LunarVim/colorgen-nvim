@@ -225,7 +225,6 @@ return theme";
         .expect("problem creating theme file");
 }
 
-// TODO: look into preserve order
 fn main() {
     let args: ColorgenArgs = ColorgenArgs::parse();
 
