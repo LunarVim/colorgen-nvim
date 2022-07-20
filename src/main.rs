@@ -52,13 +52,16 @@ EOF"
         .expect("problem creating palette file");
 }
 
-fn generate_palette(template: &Value, name: &str) {
+fn generate_palette(template: &Value, name: &str) -> Vec<String> {
     let palette = &template.get("palette");
+
+    let mut palette_keys: Vec<String> = Vec::new();
 
     if let Some(palette) = palette {
         let mut palette_data = String::from("local colors = {");
 
         for (key, val) in palette.as_table().expect("Value not a table").iter() {
+            palette_keys.push(key.to_string());
             palette_data += format!("\n  {key} = {val},").as_str();
         }
         palette_data += "\n}";
@@ -67,6 +70,8 @@ fn generate_palette(template: &Value, name: &str) {
         fs::write(format!("{name}/lua/{name}/palette.lua"), palette_data)
             .expect("problem creating palette file");
     }
+
+    palette_keys
 }
 
 fn add_style_options(style: &str) -> String {
@@ -92,7 +97,7 @@ fn add_style_options(style: &str) -> String {
     style_options
 }
 
-fn parse_value(value: &str) -> String {
+fn parse_value(value: &str, palette_keys: &[String]) -> String {
     let re = Regex::new(r"^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9A-F]{3}|[0-9A-F]{6})$")
         .expect("Invalid Expression");
 
@@ -100,8 +105,10 @@ fn parse_value(value: &str) -> String {
         "'NONE'".into()
     } else if re.is_match(value) {
         format!("'{value}'")
-    } else {
+    } else if palette_keys.contains(&value.to_string()) {
         format!("c.{value}")
+    } else {
+        panic!("{value} is not a valid palette key");
     }
 }
 
@@ -114,7 +121,7 @@ fn parse_blend(blend: &str) -> String {
     format!("{blend}")
 }
 
-fn write_line(value: &Value, colorscheme_data: &mut String) {
+fn write_line(value: &Value, colorscheme_data: &mut String, palette_keys: Vec<String>) {
     for (hl_group, hl_values) in value.as_table().expect("Value not a table").iter() {
         if let Some(string) = hl_values.as_str() {
             let values = string.split(' ').collect::<Vec<&str>>();
@@ -131,7 +138,7 @@ fn write_line(value: &Value, colorscheme_data: &mut String) {
                     } else {
                         *colorscheme_data += format!(
                             "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = 'NONE' }})",
-                            fg = parse_value(fg)
+                            fg = parse_value(fg, &palette_keys)
                         )
                         .as_str();
                     }
@@ -139,8 +146,8 @@ fn write_line(value: &Value, colorscheme_data: &mut String) {
                 [fg, bg] => {
                     *colorscheme_data += format!(
                         "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg} }})",
-                        fg = parse_value(fg),
-                        bg = parse_value(bg)
+                        fg = parse_value(fg, &palette_keys),
+                        bg = parse_value(bg, &palette_keys)
                     )
                     .as_str();
                 }
@@ -148,8 +155,8 @@ fn write_line(value: &Value, colorscheme_data: &mut String) {
                 [fg, bg, style] => {
                     *colorscheme_data += format!(
                         "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg}, {style_options} }})",
-                        fg = parse_value(fg),
-                        bg = parse_value(bg),
+                        fg = parse_value(fg, &palette_keys),
+                        bg = parse_value(bg, &palette_keys),
                         style_options = add_style_options(style)
                     )
                     .as_str();
@@ -158,9 +165,9 @@ fn write_line(value: &Value, colorscheme_data: &mut String) {
                 [fg, bg, style, sp] => {
                     *colorscheme_data += format!(
                         "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg}, sp = {sp}, {style_options} }})",
-                        fg = parse_value(fg),
-                        bg = parse_value(bg),
-                        sp = parse_value(sp),
+                        fg = parse_value(fg, &palette_keys),
+                        bg = parse_value(bg, &palette_keys),
+                        sp = parse_value(sp, &palette_keys),
                         style_options = add_style_options(style)
                     )
                     .as_str();
@@ -168,9 +175,9 @@ fn write_line(value: &Value, colorscheme_data: &mut String) {
                 [fg, bg, style, sp, blend] => {
                     *colorscheme_data += format!(
                         "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg}, sp = {sp}, blend={blend}, {style_options} }})",
-                        fg = parse_value(fg),
-                        bg = parse_value(bg),
-                        sp = parse_value(sp),
+                        fg = parse_value(fg, &palette_keys),
+                        bg = parse_value(bg, &palette_keys),
+                        sp = parse_value(sp, &palette_keys),
                         blend = parse_blend(blend),
                         style_options = add_style_options(style)
                     )
@@ -182,7 +189,7 @@ fn write_line(value: &Value, colorscheme_data: &mut String) {
     }
 }
 
-fn generate_colorscheme(value: &Value, colorscheme_data: &mut String) {
+fn generate_colorscheme(value: &Value, colorscheme_data: &mut String, palette_keys: &[String]) {
     if let Some(table) = value.as_table() {
         for (table_name, val) in table.iter() {
             if table_name != "palette" && table_name != "information" {
@@ -191,7 +198,7 @@ fn generate_colorscheme(value: &Value, colorscheme_data: &mut String) {
   -- {table_name}"
                 )
                 .as_str();
-                write_line(val, colorscheme_data);
+                write_line(val, colorscheme_data, palette_keys.to_vec());
             }
         }
     }
@@ -219,7 +226,6 @@ return theme";
 }
 
 // TODO: look into preserve order
-// TODO: save palette keys don't allow if not in that list
 fn main() {
     let args: ColorgenArgs = ColorgenArgs::parse();
 
@@ -240,7 +246,7 @@ fn main() {
     setup_directories(name);
     generate_init(name, background);
     generate_vim_colors_file(name);
-    generate_palette(&template, name);
-    generate_colorscheme(&template, &mut colorscheme_data);
+    let palette_keys = generate_palette(&template, name);
+    generate_colorscheme(&template, &mut colorscheme_data, &palette_keys);
     generate_theme(&colorscheme_data, name);
 }
