@@ -108,7 +108,7 @@ fn parse_value(value: &str) -> String {
 fn parse_blend(blend: &str) -> String {
     let blend = blend.parse::<i32>().expect("Could not parse int");
 
-    if blend > 100 || blend < 0 {
+    if !(0..=100).contains(&blend) {
         panic!("blend must be between 0 and 100");
     }
     format!("{blend}")
