@@ -227,9 +227,13 @@ fn main() {
 
     let template = content.parse::<Value>().expect("Invalid Toml");
 
-    let name = template["information"]["name"].as_str().expect("Must contain an information table and name");
+    let name = template["information"]["name"]
+        .as_str()
+        .expect("Must contain an information table and name");
 
-    let background = template["information"]["background"].as_str().expect("Must contain an information table and background");
+    let background = template["information"]["background"]
+        .as_str()
+        .expect("Must contain an information table and background");
 
     let mut colorscheme_data = String::new();
 
