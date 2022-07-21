@@ -103,7 +103,7 @@ fn parse_value(value: &str, palette_keys: &[String]) -> String {
 
     if value == "-" {
         "'NONE'".into()
-    } else if re.is_match(value) {
+    } else if re.is_match(value.to_lowercase().as_str()) {
         format!("'{value}'")
     } else if palette_keys.contains(&value.to_string()) {
         format!("c.{value}")
