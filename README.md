@@ -1,6 +1,6 @@
 # colorgen-nvim
 
-A colorscheme generator for Neovim written in Rust 🦀 
+A colorscheme generator for Neovim written in Rust 🦀🚀
 
 ## Installing
 
