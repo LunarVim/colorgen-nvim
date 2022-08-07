@@ -6,8 +6,8 @@ use clap::Parser;
 use regex::Regex;
 
 fn setup_directories(name: &str) {
-    fs::create_dir_all(format!("{name}/lua/{name}")).expect("Unable to write dir");
-    fs::create_dir_all(format!("{name}/colors")).expect("Unable to write dir");
+    fs::create_dir_all(format!("{name}/lua/{name}", name = name)).expect("Unable to write dir");
+    fs::create_dir_all(format!("{name}/colors", name = name)).expect("Unable to write dir");
 }
 
 fn generate_init(name: &str, background: &str) {
@@ -33,11 +33,16 @@ M.setup = function()
   theme.set_highlights()
 end
 
-return M"
+return M",
+        name = name,
+        background = background
     );
 
-    fs::write(format!("{name}/lua/{name}/init.lua"), init_data)
-        .expect("problem creating palette file");
+    fs::write(
+        format!("{name}/lua/{name}/init.lua", name = name),
+        init_data,
+    )
+    .expect("problem creating palette file");
 }
 
 fn generate_vim_colors_file(name: &str) {
@@ -45,11 +50,15 @@ fn generate_vim_colors_file(name: &str) {
         "lua << EOF
 local {name} = require(\"{name}\")
 {name}.setup({{}})
-EOF"
+EOF",
+        name = name
     );
 
-    fs::write(format!("{name}/colors/{name}.vim",), vim_colors_file_data)
-        .expect("problem creating palette file");
+    fs::write(
+        format!("{name}/colors/{name}.vim", name = name),
+        vim_colors_file_data,
+    )
+    .expect("problem creating palette file");
 }
 
 fn generate_palette(template: &Value, name: &str) -> Vec<String> {
@@ -62,13 +71,16 @@ fn generate_palette(template: &Value, name: &str) -> Vec<String> {
 
         for (key, val) in palette.as_table().expect("Value not a table").iter() {
             palette_keys.push(key.to_string());
-            palette_data += format!("\n  {key} = {val},").as_str();
+            palette_data += format!("\n  {key} = {val},", key = key, val = val).as_str();
         }
         palette_data += "\n}";
         palette_data += "\n\nreturn colors";
 
-        fs::write(format!("{name}/lua/{name}/palette.lua"), palette_data)
-            .expect("problem creating palette file");
+        fs::write(
+            format!("{name}/lua/{name}/palette.lua", name = name),
+            palette_data,
+        )
+        .expect("problem creating palette file");
     }
 
     palette_keys
@@ -90,7 +102,7 @@ fn add_style_options(style: &str) -> String {
             'r' => style_options += "reverse=true, ",
             'n' => style_options += "nocombine=true, ",
             '-' => {}
-            _ => panic!("invalid style option! {option}"),
+            _ => panic!("invalid style option! {option}", option = option),
         }
     }
     style_options.pop();
@@ -104,11 +116,11 @@ fn parse_value(value: &str, palette_keys: &[String]) -> String {
     if value == "-" {
         "'NONE'".into()
     } else if re.is_match(value.to_lowercase().as_str()) {
-        format!("'{value}'")
+        format!("'{value}'", value = value)
     } else if palette_keys.contains(&value.to_string()) {
-        format!("c.{value}")
+        format!("c.{value}", value = value)
     } else {
-        panic!("{value} is not a valid palette key");
+        panic!("{value} is not a valid palette key", value = value);
     }
 }
 
@@ -118,7 +130,7 @@ fn parse_blend(blend: &str) -> String {
     if !(0..=100).contains(&blend) {
         panic!("blend must be between 0 and 100");
     }
-    format!("{blend}")
+    format!("{blend}", blend = blend)
 }
 
 fn write_line(value: &Value, colorscheme_data: &mut String, palette_keys: Vec<String>) {
@@ -132,12 +144,14 @@ fn write_line(value: &Value, colorscheme_data: &mut String, palette_keys: Vec<St
                     if fg.contains("link:") {
                         *colorscheme_data += format!(
                             "\n  hl(0, \"{hl_group}\", {{ link = '{link}' }})",
+                            hl_group = hl_group,
                             link = fg.to_string().replace("link:", "")
                         )
                         .as_str();
                     } else {
                         *colorscheme_data += format!(
                             "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = 'NONE' }})",
+                            hl_group = hl_group,
                             fg = parse_value(fg, &palette_keys)
                         )
                         .as_str();
@@ -146,6 +160,7 @@ fn write_line(value: &Value, colorscheme_data: &mut String, palette_keys: Vec<St
                 [fg, bg] => {
                     *colorscheme_data += format!(
                         "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg} }})",
+                        hl_group = hl_group,
                         fg = parse_value(fg, &palette_keys),
                         bg = parse_value(bg, &palette_keys)
                     )
@@ -155,6 +170,7 @@ fn write_line(value: &Value, colorscheme_data: &mut String, palette_keys: Vec<St
                 [fg, bg, style] => {
                     *colorscheme_data += format!(
                         "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg}, {style_options} }})",
+                        hl_group = hl_group,
                         fg = parse_value(fg, &palette_keys),
                         bg = parse_value(bg, &palette_keys),
                         style_options = add_style_options(style)
@@ -165,6 +181,7 @@ fn write_line(value: &Value, colorscheme_data: &mut String, palette_keys: Vec<St
                 [fg, bg, style, sp] => {
                     *colorscheme_data += format!(
                         "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg}, sp = {sp}, {style_options} }})",
+                            hl_group = hl_group,
                         fg = parse_value(fg, &palette_keys),
                         bg = parse_value(bg, &palette_keys),
                         sp = parse_value(sp, &palette_keys),
@@ -175,6 +192,7 @@ fn write_line(value: &Value, colorscheme_data: &mut String, palette_keys: Vec<St
                 [fg, bg, style, sp, blend] => {
                     *colorscheme_data += format!(
                         "\n  hl(0, \"{hl_group}\", {{ fg = {fg}, bg = {bg}, sp = {sp}, blend={blend}, {style_options} }})",
+                            hl_group = hl_group,
                         fg = parse_value(fg, &palette_keys),
                         bg = parse_value(bg, &palette_keys),
                         sp = parse_value(sp, &palette_keys),
@@ -195,7 +213,8 @@ fn generate_colorscheme(value: &Value, colorscheme_data: &mut String, palette_ke
             if table_name != "palette" && table_name != "information" {
                 *colorscheme_data += format!(
                     "\n
-  -- {table_name}"
+  -- {table_name}",
+                    table_name = table_name
                 )
                 .as_str();
                 write_line(val, colorscheme_data, palette_keys.to_vec());
@@ -213,6 +232,7 @@ local hl = vim.api.nvim_set_hl
 local theme = {{}}
 
 theme.set_highlights = function()",
+        name = name
     );
 
     theme_data += colorscheme_data;
@@ -221,7 +241,7 @@ theme.set_highlights = function()",
 
 return theme";
 
-    fs::write(format!("{name}/lua/{name}/theme.lua"), theme_data)
+    fs::write(format!("{name}/lua/{name}/theme.lua", name=name), theme_data)
         .expect("problem creating theme file");
 }
 
