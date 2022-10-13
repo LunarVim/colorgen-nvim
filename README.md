@@ -1,3 +1,5 @@
+![banner](./assets/colorgen.png?raw=true 'banner')
+
 # colorgen-nvim
 
 A colorscheme generator for Neovim written in Rust 🦀🚀
