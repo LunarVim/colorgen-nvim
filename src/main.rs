@@ -41,14 +41,9 @@ return M"
 }
 
 fn generate_vim_colors_file(name: &str) {
-    let vim_colors_file_data = format!(
-        "lua << EOF
-local {name} = require(\"{name}\")
-{name}.setup({{}})
-EOF"
-    );
+    let vim_colors_file_data = format!("require(\"{name}\").setup({{}})\n");
 
-    fs::write(format!("{name}/colors/{name}.vim",), vim_colors_file_data)
+    fs::write(format!("{name}/colors/{name}.lua",), vim_colors_file_data)
         .expect("problem creating palette file");
 }
 
