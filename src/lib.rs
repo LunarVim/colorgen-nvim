@@ -33,7 +33,7 @@ impl Template {
             self.generate_init(),
         )?;
 
-        let init_lua = name.with_file_name("lua");
+        let init_lua = name.with_extension("lua");
         write_file!(
             [base_path, name, "colors", init_lua],
             self.generate_vim_colors_file(),
