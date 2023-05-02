@@ -1,19 +1,17 @@
 use crate::palette::Palette;
 use crate::sections::color_spec::{parser::Color, ColorFormat};
 use color_spec::ColorSpec;
+use linked_hash_map::LinkedHashMap;
 use serde::{Deserialize, Serialize};
-use std::{
-    collections::HashMap,
-    fmt::{self, Display, Formatter},
-};
+use std::fmt::{self, Display, Formatter};
 
 mod color_spec;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Sections(pub HashMap<String, Section>);
+pub struct Sections(pub LinkedHashMap<String, Section>);
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Section(pub HashMap<String, ColorSpec>);
+pub struct Section(pub LinkedHashMap<String, ColorSpec>);
 
 impl Sections {
     pub fn check_colors(&self, palette: &Palette) -> Result<(), MissingPaletteColor> {
