@@ -12,6 +12,10 @@ keywords = ["neovim", "nvim", "colorscheme", "toml", "theme"]
 
 
 [dependencies]
-clap = { version = "3.2.12", features = ["derive"] }
-toml = {version = "0.5.9", features = ["preserve_order"]}
-regex = "1.6.0"
+bitflags = "2.1.0"
+clap = { version = "4.2.5", features = ["derive"] }
+hex = { version = "0.4.3", features = ["serde"] }
+nom = "7.1.3"
+serde = { version = "1.0.160", features = ["derive"] }
+thiserror = "1.0.40"
+toml = "0.7.3"
