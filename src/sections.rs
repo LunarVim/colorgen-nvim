@@ -83,13 +83,39 @@ theme.set_highlights = function()",
             theme_name = self.theme_name
         )?;
 
+        write!(
+            f,
+            "{}",
+            ThemeHighlights {
+                theme_name: self.theme_name,
+                sections: self.sections,
+                indent: "  "
+            }
+        )?;
+
+        write!(f, "\n\nend\n\nreturn theme")
+    }
+}
+
+pub struct ThemeHighlights<'a> {
+    pub theme_name: &'a str,
+    pub sections: &'a Sections,
+    pub indent: &'a str,
+}
+
+impl Display for ThemeHighlights<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         for (table_name, section) in &self.sections.0 {
-            write!(f, "\n\n  -- {table_name}")?;
+            write!(f, "\n\n{indent}-- {table_name}", indent = self.indent)?;
             for (hl_group, color_spec) in &section.0 {
-                write!(f, "\n  hl(0, \"{hl_group}\", {color_spec})")?;
+                write!(
+                    f,
+                    "\n{indent}hl(0, \"{hl_group}\", {color_spec})",
+                    indent = self.indent
+                )?;
             }
         }
 
-        write!(f, "\n\nend\n\nreturn theme")
+        Ok(())
     }
 }
