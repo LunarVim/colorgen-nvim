@@ -1,5 +1,6 @@
 use crate::{
     formatters::{InitLua, InitSetup, VimColorsFile},
+    global::Global,
     information::Information,
     macros::write_file,
     palette::{InnerPalette, Palette},
@@ -15,6 +16,7 @@ use std::{
 
 pub mod cli;
 pub mod formatters;
+pub mod global;
 pub mod information;
 pub(crate) mod macros;
 pub mod palette;
@@ -24,6 +26,7 @@ pub mod sections;
 pub struct Template {
     pub information: Information,
     pub palette: Palette,
+    pub global: Option<Global>,
     #[serde(flatten)]
     pub sections: Sections,
 }
@@ -90,6 +93,7 @@ impl Template {
                 colors: &self.palette.0,
                 indent: "  ",
             },
+            global: self.global.as_ref(),
             theme: ThemeHighlights {
                 theme_name: &self.information.name,
                 sections: &self.sections,
@@ -103,6 +107,7 @@ pub struct SingleFile<'a> {
     pub init_setup: InitSetup<'a>,
     pub palette: InnerPalette<'a>,
     pub theme: ThemeHighlights<'a>,
+    pub global: Option<&'a Global>,
 }
 
 impl SingleFile<'_> {
@@ -115,6 +120,9 @@ impl SingleFile<'_> {
 
 impl Display for SingleFile<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        if let Some(global) = &self.global {
+            write!(f, "{}", global)?;
+        }
         write!(f, "{}\n\n", self.init_setup)?;
         write!(f, "local c = {{")?;
         write!(f, "{}\n\n", self.palette)?;
