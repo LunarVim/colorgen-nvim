@@ -121,7 +121,7 @@ impl SingleFile<'_> {
 impl Display for SingleFile<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         if let Some(global) = &self.global {
-            write!(f, "{}", global)?;
+            writeln!(f, "{}", global)?;
         }
         write!(f, "{}\n\n", self.init_setup)?;
         write!(f, "local c = {{")?;
