@@ -1,8 +1,10 @@
-use crate::{information::Information, palette::Palette, sections::Sections};
-use formatters::{InitLua, InitSetup, VimColorsFile};
-use macros::write_file;
-use palette::InnerPalette;
-use sections::{SectionsFormatter, ThemeHighlights};
+use crate::{
+    formatters::{InitLua, InitSetup, VimColorsFile},
+    information::Information,
+    macros::write_file,
+    palette::{InnerPalette, Palette},
+    sections::{Sections, SectionsFormatter, ThemeHighlights},
+};
 use serde::{Deserialize, Serialize};
 use std::{
     fmt::{self, Display, Formatter},
