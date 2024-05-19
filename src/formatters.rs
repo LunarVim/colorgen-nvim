@@ -9,7 +9,7 @@ pub struct InitLua<'a> {
 impl<'a> Display for InitLua<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let name = &self.name;
-        let background = &self.background;
+        let background = self.background;
 
         writeln!(
             f,
@@ -17,20 +17,43 @@ impl<'a> Display for InitLua<'a> {
 local theme = require('{name}.theme')
 
 M.setup = function()
-  vim.cmd('hi clear')
-
-  vim.o.background = '{background}'
-  if vim.fn.exists('syntax_on') then
-    vim.cmd('syntax reset')
-  end
-
-  vim.o.termguicolors = true
-  vim.g.colors_name = '{name}'
+{setup}
 
   theme.set_highlights()
 end
 
-return M"#
+return M"#,
+            setup = InitSetup {
+                name,
+                background,
+                indent: "  "
+            }
+        )
+    }
+}
+
+pub struct InitSetup<'a> {
+    pub name: &'a str,
+    pub background: Background,
+    pub indent: &'a str,
+}
+
+impl Display for InitSetup<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            r#"{indent}vim.cmd('hi clear')
+
+{indent}vim.o.background = '{background}'
+{indent}if vim.fn.exists('syntax_on') then
+{indent}  vim.cmd('syntax reset')
+{indent}end
+
+{indent}vim.o.termguicolors = true
+{indent}vim.g.colors_name = '{name}'"#,
+            indent = self.indent,
+            name = self.name,
+            background = self.background
         )
     }
 }

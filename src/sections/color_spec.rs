@@ -1,7 +1,6 @@
-use std::fmt::Display;
-
 use self::parser::Color;
 use bitflags::bitflags;
+use std::fmt::Display;
 
 pub mod parser;
 

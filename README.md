@@ -106,6 +106,15 @@ Style Options:
 - `r`: reverse
 - `n`: nocombine
 
+You can also generate global variables for the colorscheme, which might be needed for some plugins.
+
+```toml
+[global]
+variable = "<content>"
+```
+
+Where `"<content>"` accepts any string.
+
 TODO:
 
 - support transparent background (this could get tricky with other plugins, considering bg:optional, if you put that then setting the transparent flag will set it to none) 
